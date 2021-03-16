@@ -64,7 +64,7 @@ void set_sendcycle(uint8_t val[]) {
            cfg.sendcycle * 2);
 }
 
-void set_sleepcycle(uint8_t val[]) {
+void set_sleepcycle(uint16_t val[]) {
   cfg.sleepcycle = val[0];
   ESP_LOGI(TAG, "Remote command: set sleep cycle to %d seconds",
            cfg.sleepcycle * 2);
