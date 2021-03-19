@@ -4,6 +4,7 @@
 static const char TAG[] = __FILE__;
 
 #include "sdcard.h"
+#include "hash.h"
 
 #ifdef HAS_SDCARD
 
@@ -39,9 +40,35 @@ bool sdcard_init() {
   return useSDCard;
 }
 
+void writeMac(MacBuffer_t MacBuffer) {
+  char tempBuffer[40];
+  time_t t = now();
+  sprintf(
+    tempBuffer,
+    "%d,%03d,%02d.%02d.%4d,%02d:%02d:%02d",
+    myhash((const char *)&MacBuffer.mac, 12),
+    MacBuffer.rssi,
+    day(t),
+    month(t),
+    year(t),
+    hour(t),
+    minute(t),
+    second(t)
+  );
+
+  if(!useSDCard)
+    sdcard_init();
+  fileSDCard.println(tempBuffer);
+}
+
 void sdcardWriteData(uint16_t noWifi, uint16_t noBle,
                      __attribute__((unused)) uint16_t noBleCWA) {
   static int counterWrites = 0;
+#if (SAVE_MACS_INSTANTLY == 1)
+  fileSDCard.println();
+  fileSDCard.flush();
+  return;
+#endif
   char tempBuffer[12 + 1];
   time_t t = now();
 #if (HAS_SDS011)
@@ -103,7 +130,11 @@ void createFile(void) {
 
       if (fileSDCard) {
         ESP_LOGD(TAG, "SD: name opened: <%s>", bufferFilename);
+#if (SAVE_MACS_INSTANTLY == 1)
+        fileSDCard.print(SDCARD_INSTANT_MACS_FILE_HEADER);
+#else
         fileSDCard.print(SDCARD_FILE_HEADER);
+#endif
 #if (COUNT_ENS)
         fileSDCard.print(SDCARD_FILE_HEADER_CWA); // for Corona-data (CWA)
 #endif
