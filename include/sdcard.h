@@ -56,6 +56,7 @@
 
 #define SDCARD_FILE_NAME "/paxcount.%02d"
 #define SDCARD_FILE_HEADER "date, time, wifi, bluet"
+#define SDCARD_INSTANT_MACS_FILE_HEADER "mac,rssi,date,time"
 
 #if (COUNT_ENS)
 #define SDCARD_FILE_HEADER_CWA ",cwa"
@@ -63,5 +64,6 @@
 
 bool sdcard_init(void);
 void sdcardWriteData(uint16_t, uint16_t, uint16_t = 0);
+void writeMac(MacBuffer_t MacBuffer);
 
 #endif // _SDCARD_H
