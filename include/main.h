@@ -19,6 +19,7 @@
 #include "sensor.h"
 #include "lorawan.h"
 #include "timekeeper.h"
+#include "manual_time.h"
 #include "corona.h"
 #include "boot.h"
 

@@ -396,6 +396,11 @@ void setup() {
   strcat_P(features, " FILTER");
 #endif
 
+
+#if (TIME_SYNC_MANUAL)
+  setSyncProvider(manual_timeSync);
+#endif
+
 // initialize matrix display
 #ifdef HAS_MATRIX_DISPLAY
   strcat_P(features, " LED_MATRIX");
@@ -403,7 +408,7 @@ void setup() {
   init_matrix_display(); // note: blocking call
 #endif
 
-// initialize matrix display
+// initialize e paper display
 #ifdef HAS_E_PAPER_DISPLAY
   strcat_P(features, " E-INK display");
   E_paper_displayIsOn = cfg.screenon;
@@ -520,7 +525,13 @@ void setup() {
 #endif // HAS_BUTTON
 
   // cyclic function interrupts
+#if (TIME_SYNC_MANUAL == 1 && defined(HAS_BUTTON))
+  if(RTC_runmode != RUNMODE_POWERCYCLE)
+    sendTimer.attach(cfg.sendcycle * 2, setSendIRQ);
+#else
   sendTimer.attach(cfg.sendcycle * 2, setSendIRQ);
+#endif
+  
   cyclicTimer.attach(HOMECYCLE, setCyclicIRQ);
 
 // only if we have a timesource we do timesync
@@ -552,5 +563,6 @@ void setup() {
   vTaskDelete(NULL);
 
 } // setup()
+
 
 void loop() { vTaskDelete(NULL); }
