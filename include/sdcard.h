@@ -62,7 +62,7 @@
 #define SDCARD_FILE_HEADER_CWA ",cwa"
 #endif
 
-bool sdcard_init(void);
+bool sdcard_init(bool verbose);
 void sdcardWriteData(uint16_t, uint16_t, uint16_t = 0);
 void writeMac(MacBuffer_t MacBuffer);
 

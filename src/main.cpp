@@ -382,7 +382,7 @@ void setup() {
 #endif
 
 #if (HAS_SDCARD)
-  if (sdcard_init())
+  if (sdcard_init(RTC_runmode == RUNMODE_POWERCYCLE))
     strcat_P(features, " SD");
 #endif
 

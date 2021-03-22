@@ -9,12 +9,13 @@ static const char TAG[] = __FILE__;
 #ifdef HAS_SDCARD
 
 static bool useSDCard;
+RTC_DATA_ATTR char folderName[4];
 
-static void createFile(void);
+static void createFile(bool verbose);
 
 File fileSDCard;
 
-bool sdcard_init() {
+bool sdcard_init(bool verbose) {
   ESP_LOGI(TAG, "looking for SD-card...");
 
   // for usage of SD drivers on ESP32 platform see
@@ -34,7 +35,7 @@ bool sdcard_init() {
 
   if (useSDCard) {
     ESP_LOGI(TAG, "SD-card found");
-    createFile();
+    createFile(verbose);
   } else
     ESP_LOGI(TAG, "SD-card not found");
   return useSDCard;
@@ -57,7 +58,7 @@ void writeMac(MacBuffer_t MacBuffer) {
   );
 
   if(!useSDCard)
-    sdcard_init();
+    sdcard_init(false);
   fileSDCard.println(tempBuffer);
 }
 
@@ -103,51 +104,62 @@ void sdcardWriteData(uint16_t noWifi, uint16_t noBle,
     counterWrites = 0;
   }
 }
-
-void createFile(void) {
-  char bufferFilename[8 + 1 + 3 + 1];
-
+void createFile(bool verbose) {
   useSDCard = false;
 
-  for (int i = 0; i < 100; i++) {
-    sprintf(bufferFilename, SDCARD_FILE_NAME, i);
-    // ESP_LOGD(TAG, "SD: looking for file <%s>", bufferFilename);
-
+  //create folder:
+  if(verbose) {
+    for(int i = 1; i < 100; i++) {
+      sprintf(folderName, "%03d", i);
 #if HAS_SDCARD == 1
-    bool fileExists = SD.exists(bufferFilename);
-#elif HAS_SDCARD == 2
-    bool fileExists = SD_MMC.exists(bufferFilename);
-#endif
-
-    if (!fileExists) {
-      // ESP_LOGD(TAG, "SD: file does not exist: opening");
-
-#if HAS_SDCARD == 1
-      fileSDCard = SD.open(bufferFilename, FILE_WRITE);
-#elif HAS_SDCARD == 2
-      fileSDCard = SD_MMC.open(bufferFilename, FILE_WRITE);
-#endif
-
-      if (fileSDCard) {
-        ESP_LOGD(TAG, "SD: name opened: <%s>", bufferFilename);
-#if (SAVE_MACS_INSTANTLY == 1)
-        fileSDCard.print(SDCARD_INSTANT_MACS_FILE_HEADER);
-#else
-        fileSDCard.print(SDCARD_FILE_HEADER);
-#endif
-#if (COUNT_ENS)
-        fileSDCard.print(SDCARD_FILE_HEADER_CWA); // for Corona-data (CWA)
-#endif
-#if (HAS_SDS011)
-        fileSDCard.print(SDCARD_FILE_HEADER_SDS011);
-#endif
-        fileSDCard.println();
-        useSDCard = true;
+      if(!SD.exists(folderName)) {
+        SD.mkdir(folderName);
         break;
       }
+#elif HAS_SDCARD == 2
+      if(!SD_MMC.exists(folderName)) {
+        SD_MMC.mkdir(folderName);
+        break;
+      }
+#endif
     }
   }
-  return;
+
+  //create / open file:
+  char bufferFilename[15];
+  time_t t = myTZ.toLocal(now());
+  sprintf(bufferFilename, "%03d/%4d_%02d_%02d", folderName, year(t), month(t), day(t));
+  bool newFile = false;
+
+#if HAS_SDCARD == 1
+  if(!SD.exists(bufferFilename)) {
+    fileSDCard = SD.open(bufferFilename, FILE_WRITE);
+    newFile = true;
+  }
+  else
+    fileSDCard = SD.open(bufferFilename, F_READ | F_WRITE | F_CREAT | F_APPEND);
+
+#elif HAS_SDCARD == 2
+  if(!SD_MMC.exists(bufferFilename)) {
+    fileSDCard = SD_MMC.open(bufferFilename, FILE_WRITE);
+    newFile = true;
+  }
+  else
+    fileSDCard = SD_MMC.open(bufferFilename, F_READ | F_WRITE | F_CREAT | F_APPEND);
+#endif
+  
+  if(fileSDCard) {
+#if (SAVE_MACS_INSTANTLY == 1)
+    fileSDCard.print(SDCARD_INSTANT_MACS_FILE_HEADER);
+#elif (COUNT_ENS)
+    fileSDCard.print(SDCARD_FILE_HEADER_CWA); // for Corona-data (CWA)
+#elif (HAS_SDS011)
+    fileSDCard.print(SDCARD_FILE_HEADER_SDS011);
+#endif
+    fileSDCard.println();
+  }
+
+  useSDCard = true;
 }
 
 #endif // (HAS_SDCARD)
