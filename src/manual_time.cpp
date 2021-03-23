@@ -63,16 +63,22 @@ bool clickAction() {
       return true;
       break;
     case page_hour1:
-      tm.Hour = (tm.Hour+1) % 10;
+      tm.Hour = (tm.Hour+10) % 30; //20 is still allowed.
       break;
     case page_hour2:
-      tm.Hour = (tm.Hour+10) % 24;
+      ++tm.Hour;
+      if(tm.Hour > 23)
+        tm.Hour = 20;
+      else if(tm.Hour % 10 == 0)
+        tm.Hour -= 10;
       break;
     case page_minute1:
-      tm.Minute = (tm.Minute+1) % 10;
+      tm.Minute = (tm.Minute+10) % 60;
       break;
     case page_minute2:
-      tm.Minute = (tm.Minute+10) % 60;
+      ++tm.Minute;
+      if(tm.Minute % 10 == 0)
+        tm.Minute -= 10;
       break;
   }
   return false;
@@ -119,19 +125,19 @@ PageData getPageData() {
       return p;
       break;
     case page_hour1:
-      p.desc = "Select 2nd digit of current hour:";
-      p.big = String("0")+tm.Hour;
+      p.desc = "Select 1st digit of current hour:";
+      p.big = tm.Hour;
       break;
     case page_hour2:
-      p.desc = "Select 1st digit of current hour:";
+      p.desc = "Select 2nd digit of current hour:";
       p.big = String(tm.Hour);
       break;
     case page_minute1:
-      p.desc = "Select 2nd digit of current minute:";
-      p.big = String("0")+tm.Minute;
+      p.desc = "Select 1st digit of current minute:";
+      p.big = tm.Minute;
       break;
     case page_minute2:
-      p.desc = "Select 1st digit of current minute:";
+      p.desc = "Select 2nd digit of current minute:";
       p.big = String(tm.Minute);
       break;
   }
