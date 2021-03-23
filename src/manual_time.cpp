@@ -38,7 +38,7 @@ bool is_timeAskMode_var = false;
 
 
 time_t manual_timeSync() {
-  return base_timestamp + (uptime() - millis()) / 1000;
+  return base_timestamp + uptime() / 1000;
 }
 
 void set_timestamp(tmElements_t t) {

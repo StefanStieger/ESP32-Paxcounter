@@ -9,7 +9,7 @@ static const char TAG[] = __FILE__;
 #ifdef HAS_SDCARD
 
 static bool useSDCard;
-RTC_DATA_ATTR char folderName[4];
+RTC_DATA_ATTR int folderInt;
 
 static void createFile(bool verbose);
 
@@ -106,29 +106,30 @@ void sdcardWriteData(uint16_t noWifi, uint16_t noBle,
 }
 void createFile(bool verbose) {
   useSDCard = false;
+  char bufferFilename[8 + 1 + 3 + 1];
 
-  //create folder:
+  //find number:
   if(verbose) {
     for(int i = 1; i < 100; i++) {
-      sprintf(folderName, "%03d", i);
+      sprintf(bufferFilename, SDCARD_FILE_NAME, i);
 #if HAS_SDCARD == 1
-      if(!SD.exists(folderName)) {
-        SD.mkdir(folderName);
+      if(!SD.exists(bufferFilename)) {
+        folderInt = i;
         break;
       }
 #elif HAS_SDCARD == 2
-      if(!SD_MMC.exists(folderName)) {
-        SD_MMC.mkdir(folderName);
+      if(!SD_MMC.exists(bufferFilename)) {
+        folderInt = i;
         break;
       }
 #endif
     }
   }
-
+  else
+    sprintf(bufferFilename, SDCARD_FILE_NAME, folderInt);
+  
   //create / open file:
-  char bufferFilename[15];
-  time_t t = myTZ.toLocal(now());
-  sprintf(bufferFilename, "%03d/%4d_%02d_%02d", folderName, year(t), month(t), day(t));
+  
   bool newFile = false;
 
 #if HAS_SDCARD == 1
@@ -136,8 +137,9 @@ void createFile(bool verbose) {
     fileSDCard = SD.open(bufferFilename, FILE_WRITE);
     newFile = true;
   }
-  else
+  else {
     fileSDCard = SD.open(bufferFilename, F_READ | F_WRITE | F_CREAT | F_APPEND);
+  }
 
 #elif HAS_SDCARD == 2
   if(!SD_MMC.exists(bufferFilename)) {
@@ -147,19 +149,20 @@ void createFile(bool verbose) {
   else
     fileSDCard = SD_MMC.open(bufferFilename, F_READ | F_WRITE | F_CREAT | F_APPEND);
 #endif
-  
   if(fileSDCard) {
+    if(newFile) {
 #if (SAVE_MACS_INSTANTLY == 1)
-    fileSDCard.print(SDCARD_INSTANT_MACS_FILE_HEADER);
+      fileSDCard.print(SDCARD_INSTANT_MACS_FILE_HEADER);
 #elif (COUNT_ENS)
-    fileSDCard.print(SDCARD_FILE_HEADER_CWA); // for Corona-data (CWA)
+      fileSDCard.print(SDCARD_FILE_HEADER_CWA); // for Corona-data (CWA)
 #elif (HAS_SDS011)
-    fileSDCard.print(SDCARD_FILE_HEADER_SDS011);
+      fileSDCard.print(SDCARD_FILE_HEADER_SDS011);
 #endif
-    fileSDCard.println();
-  }
+      fileSDCard.println();
+    }
 
-  useSDCard = true;
+    useSDCard = true;
+  }
 }
 
 #endif // (HAS_SDCARD)
