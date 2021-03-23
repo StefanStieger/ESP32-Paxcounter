@@ -33,6 +33,7 @@ const char *printmonth[] = {
 
 uint8_t E_paper_displayIsOn = 0;
 Ticker screenUpdate;
+bool clickTimer_active = false;
 
 void ePaper_init(bool verbose) {
   display.init();
@@ -83,11 +84,16 @@ void ePaper_init(bool verbose) {
 }
 
 bool react_toClick() {
-  // screenUpdate.detach();
   if(is_timeAskMode()) {
     bool reloadPage = clickAction();
-    // screenUpdate.once_ms(200, draw_withManualTime, reloadPage);
-    draw_withManualTime(reloadPage);
+    if(!clickTimer_active) {
+      clickTimer_active = true;
+      screenUpdate.detach();
+      screenUpdate.once_ms(100, draw_withManualTime, reloadPage);
+    }
+    
+    
+    // draw_withManualTime(reloadPage);
   }
   else 
     draw_page();
@@ -145,6 +151,7 @@ void draw_withManualTime(bool wholePage) {
 
   if(p.update)
     screenUpdate.once(5, nextManualPage);
+  clickTimer_active = false;
 }
 
 void draw_manualTime_exec(String msg, String centerMsg) {
