@@ -33,11 +33,11 @@ void button_init(int pin) {
 #endif
   });
 
-  b->setOnHolding([]() {
-    payload.reset();
-    payload.addButton(0x01);
-    SendPayload(BUTTONPORT);
-  });
+  // b->setOnHolding([]() {
+  //   payload.reset();
+  //   payload.addButton(0x01);
+  //   SendPayload(BUTTONPORT);
+  // });
 
   // attach interrupt to the button
   attachInterrupt(digitalPinToInterrupt(pin), ButtonIRQ, CHANGE);

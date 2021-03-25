@@ -119,7 +119,7 @@ PageData getPageData() {
   PageData p;
   switch(displayPage) {
     case page_manualTime_start:
-      p.desc = "Time & date need to be set. Press button for selection and then wait 5 seconds to confirm.";
+      p.desc = "Time & date need to be set. Press button for selection and then wait 8 seconds to confirm.";
       p.big = "Press btn";
       p.update = false;
       return p;

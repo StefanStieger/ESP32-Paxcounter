@@ -135,10 +135,12 @@ uint32_t getFreeRAM() {
 
 void reset_counters() {
 #if ((WIFICOUNTER) || (BLECOUNTER))
+#if (COUNTERMODE != 1)
   macs.clear(); // clear all macs container
   macs_wifi = 0;
   macs_ble = 0;
   renew_salt(); // get new salt
+#endif
 #ifdef HAS_DISPLAY
   dp_plotCurve(0, true);
 #endif

@@ -128,8 +128,7 @@ uint16_t mac_analyze(MacBuffer_t MacBuffer) {
 
 #if (SAVE_MACS_INSTANTLY == 1)
   writeMac(MacBuffer);
-  return 0;
-#else
+#endif
 
   // only last 3 MAC Address bytes are used for MAC address anonymization
   // but since it's uint32 we take 4 bytes to avoid 1st value to be 0.
@@ -200,5 +199,5 @@ uint16_t mac_analyze(MacBuffer_t MacBuffer) {
 
   // if an unknown Wifi or BLE mac was counted, return hash of this mac, else 0
   return (added ? hashedmac : 0);
-#endif
+
 }

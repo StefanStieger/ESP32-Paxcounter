@@ -120,9 +120,22 @@ void draw_main(time_t t) {
   display.setFullWindow();
   display.firstPage();
   do {
+    #if (defined BAT_MEASURE_ADC || defined HAS_PMU || defined HAS_IP5306)
+    if(batt_level < 50) {
+      display.setTextSize(2);
+      display.setCursor(calc_x_centerAlignment("Please recharge", 20), 20);
+      display.println("Please recharge");
+
+      display.setTextSize(1);
+      String battery_text = batt_level == 0 ? "No battery" : String("Battery: ")+batt_level + "%";
+      display.setCursor(0, calc_y_bottomAlignment(battery_text, 0));
+      display.println(battery_text);
+      continue;
+    }
+    #endif
     display.setCursor(0, 10);
     display.setTextSize(3);
-    display.println(macs.size());
+    display.println(macs_wifi);
 
     display.setTextSize(2);
 
@@ -135,7 +148,7 @@ void draw_main(time_t t) {
       String battery_text = batt_level == 0 ? "No battery" : String("Battery: ")+batt_level + "%";
       display.setCursor(0, calc_y_bottomAlignment(battery_text, 0));
       display.println(battery_text);
-  #endif
+    #endif
   }
   while (display.nextPage());
 }
@@ -150,7 +163,7 @@ void draw_withManualTime(bool wholePage) {
     draw_manualTime_partly_exec(p.big);
 
   if(p.update)
-    screenUpdate.once(5, nextManualPage);
+    screenUpdate.once(8, nextManualPage);
   clickTimer_active = false;
 }
 
