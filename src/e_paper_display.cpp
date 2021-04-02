@@ -12,6 +12,35 @@
 #include <e_paper_choose_board.h>
 #include <esp_spi_flash.h> // needed for reading ESP32 chip attributes
 
+// white needs to be defined
+#define GxEPD_WHITE 0xFFFF
+
+// HEX code of WLAN bitmap
+
+const unsigned char wifi_bitmap [] PROGMEM = {
+	// 'wifi-32, 32x32px
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+	0x00, 0x0f, 0xf0, 0x00, 0x00, 0xff, 0xff, 0x00, 0x03, 0xff, 0xff, 0xc0, 0x07, 0xff, 0xff, 0xe0, 
+	0x1f, 0xf8, 0x1f, 0xf8, 0x3f, 0xc0, 0x03, 0xfc, 0x7e, 0x1f, 0xf8, 0xfe, 0xfc, 0xff, 0xff, 0x3f, 
+	0xf9, 0xff, 0xff, 0x9f, 0x63, 0xff, 0xff, 0xe6, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xc7, 0xe3, 0xf0, 
+	0x0f, 0x3f, 0xfc, 0xf0, 0x06, 0x7f, 0xfe, 0x60, 0x00, 0xff, 0xff, 0x00, 0x01, 0xfc, 0x3f, 0x80, 
+	0x00, 0xf7, 0xef, 0x00, 0x00, 0xcf, 0xf3, 0x00, 0x00, 0x1f, 0xf8, 0x00, 0x00, 0x1e, 0x78, 0x00, 
+	0x00, 0x0f, 0xf0, 0x00, 0x00, 0x07, 0xe0, 0x00, 0x00, 0x03, 0xc0, 0x00, 0x00, 0x01, 0x80, 0x00, 
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+const unsigned char ble_bitmap [] PROGMEM = {
+	// 'bluetooth-64, 32x32px
+	0x00, 0x0f, 0xf0, 0x00, 0x00, 0x3f, 0xfc, 0x00, 0x00, 0xff, 0xff, 0x00, 0x01, 0xfe, 0xff, 0x80, 
+	0x01, 0xfe, 0x7f, 0x80, 0x03, 0xfe, 0x3f, 0xc0, 0x03, 0xfe, 0x1f, 0xe0, 0x07, 0xfe, 0x0f, 0xe0, 
+	0x07, 0xfe, 0x07, 0xe0, 0x07, 0xde, 0x63, 0xe0, 0x07, 0x8e, 0x71, 0xf0, 0x07, 0xc6, 0x63, 0xf0, 
+	0x0f, 0xe0, 0x07, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf8, 0x1f, 0xf0, 0x0f, 0xfc, 0x1f, 0xf0, 
+	0x0f, 0xfc, 0x3f, 0xf0, 0x0f, 0xf8, 0x1f, 0xf0, 0x0f, 0xf0, 0x0f, 0xf0, 0x0f, 0xe0, 0x07, 0xf0, 
+	0x07, 0xc6, 0x63, 0xf0, 0x07, 0x8e, 0x71, 0xf0, 0x07, 0xde, 0x63, 0xe0, 0x07, 0xfe, 0x07, 0xe0, 
+	0x07, 0xfe, 0x0f, 0xe0, 0x03, 0xfe, 0x1f, 0xe0, 0x03, 0xfe, 0x3f, 0xc0, 0x01, 0xfe, 0x7f, 0x80, 
+	0x01, 0xfe, 0xff, 0x80, 0x00, 0xff, 0xff, 0x00, 0x00, 0x3f, 0xfc, 0x00, 0x00, 0x0f, 0xf0, 0x00
+};
+
 // local Tag for logging
 static const char TAG[] = __FILE__;
 
@@ -126,28 +155,57 @@ void draw_main(time_t t) {
       display.setCursor(calc_x_centerAlignment("Please recharge", 20), 20);
       display.println("Please recharge");
 
-      display.setTextSize(1);
+      display.setTextSize(2);
       String battery_text = batt_level == 0 ? "No battery" : String("Battery: ")+batt_level + "%";
       display.setCursor(0, calc_y_bottomAlignment(battery_text, 0));
       display.println(battery_text);
+      // draw line at the bottom
+      display.drawLine(0, display.height() - 15, display.width(), display.height() - 15, GxEPD_BLACK);
       continue;
     }
     #endif
-    display.setCursor(0, 10);
-    display.setTextSize(3);
+    
+    // display wifi bitmap
+    display.drawBitmap(10, 10, wifi_bitmap, 32, 32, GxEPD_BLACK);
+    display.setCursor(50, 20);
+    display.setTextSize(2.5);
     display.println(macs_wifi);
+    
+    // display ble bitmap
+    display.drawBitmap(10, 50, ble_bitmap, 32, 32, GxEPD_BLACK);
+    display.setCursor(50, 60);
+    display.println(macs_ble);
 
-    display.setTextSize(2);
-
-    display.setCursor(calc_x_rightAlignment(time_string, 10), 10);
+    // display time - button right corner
+    display.setTextSize(1.5);
+    display.setCursor(calc_x_rightAlignment(time_string, 10), calc_y_bottomAlignment(time_string, 0));
     display.println(time_string);
 
+    // draw vertical line in the middle between battery status and time
+    display.drawFastVLine(display.width() / 2, display.height() - 15, display.height(), GxEPD_BLACK);
 
+    // draw vertical line in the middle between battery status and time
+    // currently place-holder
+    display.drawLine((display.width() / 2) + 10, display.height() - 25, (display.width() / 2) + 10, (display.height() - 25) - 40, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 11, display.height() - 25, (display.width() / 2) + 11, (display.height() - 25) - 50, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 12, display.height() - 25, (display.width() / 2) + 12, (display.height() - 25) - 60, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 13, display.height() - 25, (display.width() / 2) + 13, (display.height() - 25) - 70, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 14, display.height() - 25, (display.width() / 2) + 14, (display.height() - 25) - 70, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 15, display.height() - 25, (display.width() / 2) + 15, (display.height() - 25) - 70, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 16, display.height() - 25, (display.width() / 2) + 16, (display.height() - 25) - 40, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 17, display.height() - 25, (display.width() / 2) + 17, (display.height() - 25) - 10, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 18, display.height() - 25, (display.width() / 2) + 18, (display.height() - 25) - 1, GxEPD_BLACK);
+    display.drawLine((display.width() / 2) + 19, display.height() - 25, (display.width() / 2) + 19, (display.height() - 25) - 5, GxEPD_BLACK);
+
+    // display battery status
     #if (defined BAT_MEASURE_ADC || defined HAS_PMU || defined HAS_IP5306)
-      display.setTextSize(1);
+      display.setTextSize(1.5);
       String battery_text = batt_level == 0 ? "No battery" : String("Battery: ")+batt_level + "%";
-      display.setCursor(0, calc_y_bottomAlignment(battery_text, 0));
+      display.setCursor(5, calc_y_bottomAlignment(battery_text, 0));
       display.println(battery_text);
+
+      // draw line at the bottom
+      display.drawLine(0, display.height() - 15, display.width(), display.height() - 15, GxEPD_BLACK);
     #endif
   }
   while (display.nextPage());
