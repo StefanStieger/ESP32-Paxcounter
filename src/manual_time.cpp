@@ -51,7 +51,9 @@ bool is_timeAskMode() {
   return is_timeAskMode_var;
 }
 void init_screen() {
-
+  tm.Hour = TIME_SYNC_MANUAL_DEFAULT_H;
+  tm.Minute = TIME_SYNC_MANUAL_DEFAULT_MIN;
+  
   #if (TIME_SYNC_MANUAL_SKIP_TIMEOUT == 0)
     displayPage = page_minute2;
     nextPage();
