@@ -83,8 +83,14 @@ void do_after_reset(void) {
            runmode[RTC_runmode]);
 }
 
-void enter_deepsleep(const uint64_t wakeup_sec, gpio_num_t wakeup_gpio) {
-
+void enter_deepsleep(uint64_t wakeup_sec, gpio_num_t wakeup_gpio) {
+  #if (SLEEP_TIME_WINDOW == 1)
+    time_t t = myTZ.toLocal(now());
+    if(hour(t) >= SLEEP_TIME_WINDOW_MIN && hour(t) < SLEEP_TIME_WINDOW_MAX) {
+      wakeup_sec = (SLEEP_TIME_WINDOW_MAX - hour(t))*60*60 - minute(t)*60 - second(t);
+      ESP_LOGI(TAG, "Sleeping for %d secs until end of timewindow", wakeup_sec);
+    }
+  #endif
   ESP_LOGI(TAG, "Preparing to sleep...");
 
   RTC_runmode = RUNMODE_SLEEP;
