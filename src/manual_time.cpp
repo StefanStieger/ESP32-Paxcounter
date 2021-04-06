@@ -51,9 +51,15 @@ bool is_timeAskMode() {
   return is_timeAskMode_var;
 }
 void init_screen() {
-  tm.Year = 50;
-  displayPage = page_manualTime_start;
-  is_timeAskMode_var = true;
+
+  #if (TIME_SYNC_MANUAL_SKIP_TIMEOUT == 0)
+    displayPage = page_minute2;
+    nextPage();
+  #else
+    tm.Year = 50;
+    displayPage = page_manualTime_start;
+    is_timeAskMode_var = true;
+  #endif
 }
 
 bool clickAction() {
@@ -119,7 +125,7 @@ PageData getPageData() {
   PageData p;
   switch(displayPage) {
     case page_manualTime_start:
-      p.desc = "Time & date need to be set. Press button for selection and then wait 8 seconds to confirm.";
+      p.desc = "Time & date need to be set. Press button for selection and then wait "+String(TIME_SYNC_MANUAL_SKIP_TIMEOUT)+" seconds to confirm.";
       p.big = "Press btn";
       p.update = false;
       return p;
