@@ -64,6 +64,12 @@ uint8_t E_paper_displayIsOn = 0;
 Ticker screenUpdate;
 bool clickTimer_active = false;
 
+
+RTC_DATA_ATTR time_t statisticsPointer = 0;
+RTC_DATA_ATTR int16_t statistics[STATISTICS_MAX_ENTRIES];
+RTC_DATA_ATTR int16_t statistics_lastValue = 0;
+
+
 void ePaper_init(bool verbose) {
   display.init();
   display.setRotation(1);
@@ -106,6 +112,12 @@ void ePaper_init(bool verbose) {
     #if(TIME_SYNC_MANUAL == 1) 
       init_screen();
     #endif // TIME_SYNC_MANUAL
+  }
+  else {
+    int sum = macs_wifi + macs_ble;
+    statistics[statisticsPointer] = sum - statistics_lastValue;
+    statistics_lastValue = sum;
+    statisticsPointer = (statisticsPointer+1)%100;
   }
   
   draw_page();
@@ -150,19 +162,19 @@ void draw_main(time_t t) {
   display.firstPage();
   do {
     #if (defined BAT_MEASURE_ADC || defined HAS_PMU || defined HAS_IP5306)
-    if(batt_level < 50) {
-      display.setTextSize(2);
-      display.setCursor(calc_x_centerAlignment("Please recharge", 20), 20);
-      display.println("Please recharge");
+      if(batt_level < 50) {
+        display.setTextSize(2);
+        display.setCursor(calc_x_centerAlignment("Please recharge", 20), 20);
+        display.println("Please recharge");
 
-      display.setTextSize(2);
-      String battery_text = batt_level == 0 ? "No battery" : String("Battery: ")+batt_level + "%";
-      display.setCursor(0, calc_y_bottomAlignment(battery_text, 0));
-      display.println(battery_text);
-      // draw line at the bottom
-      display.drawLine(0, display.height() - 15, display.width(), display.height() - 15, GxEPD_BLACK);
-      continue;
-    }
+        display.setTextSize(2);
+        String battery_text = batt_level == 0 ? "No battery" : String("Battery: ")+batt_level + "%";
+        display.setCursor(0, calc_y_bottomAlignment(battery_text, 0));
+        display.println(battery_text);
+        // draw line at the bottom
+        display.drawLine(0, display.height() - 15, display.width(), display.height() - 15, GxEPD_BLACK);
+        continue;
+      }
     #endif
     
     // display wifi bitmap
@@ -186,17 +198,14 @@ void draw_main(time_t t) {
 
     // draw vertical line in the middle between battery status and time
     // currently place-holder
-    display.drawLine((display.width() / 2) + 10, display.height() - 25, (display.width() / 2) + 10, (display.height() - 25) - 40, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 11, display.height() - 25, (display.width() / 2) + 11, (display.height() - 25) - 50, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 12, display.height() - 25, (display.width() / 2) + 12, (display.height() - 25) - 60, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 13, display.height() - 25, (display.width() / 2) + 13, (display.height() - 25) - 70, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 14, display.height() - 25, (display.width() / 2) + 14, (display.height() - 25) - 70, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 15, display.height() - 25, (display.width() / 2) + 15, (display.height() - 25) - 70, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 16, display.height() - 25, (display.width() / 2) + 16, (display.height() - 25) - 40, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 17, display.height() - 25, (display.width() / 2) + 17, (display.height() - 25) - 10, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 18, display.height() - 25, (display.width() / 2) + 18, (display.height() - 25) - 1, GxEPD_BLACK);
-    display.drawLine((display.width() / 2) + 19, display.height() - 25, (display.width() / 2) + 19, (display.height() - 25) - 5, GxEPD_BLACK);
 
+    int startX = (display.width() / 2);
+    int startY = display.height() - 25;
+    for(int8_t i=0; i<STATISTICS_MAX_ENTRIES; ++i) {
+      int x = startX + i;
+      display.drawLine(x, startY, x, startY - statistics[(statisticsPointer+i) % STATISTICS_MAX_ENTRIES], GxEPD_BLACK);
+    }
+    
     // display battery status
     #if (defined BAT_MEASURE_ADC || defined HAS_PMU || defined HAS_IP5306)
       display.setTextSize(1.5);
