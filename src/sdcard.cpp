@@ -44,10 +44,27 @@ bool sdcard_init(bool verbose) {
 void writeMac(MacBuffer_t MacBuffer) {
   char tempBuffer[40];
   time_t t = now();
+  #if (VERBOSE == 1)
+    ESP_LOGI(TAG, "%02x:%02x:%02x:%02x:%02x:%02x,%d,%d,%02d.%02d.%4d,%02d:%02d:%02d",
+      MacBuffer.mac[0],
+      MacBuffer.mac[1],
+      MacBuffer.mac[2],
+      MacBuffer.mac[3],
+      MacBuffer.mac[4],
+      MacBuffer.mac[5],
+      myhash((const char *)&MacBuffer.mac, 4),
+      MacBuffer.rssi,
+      day(t),
+      month(t),
+      year(t),
+      hour(t),
+      minute(t),
+      second(t));
+  #endif
   sprintf(
     tempBuffer,
-    "%d,%03d,%02d.%02d.%4d,%02d:%02d:%02d",
-    myhash((const char *)&MacBuffer.mac, 12),
+    "%d,%d,%02d.%02d.%4d,%02d:%02d:%02d",
+    myhash((const char *)&MacBuffer.mac, 4),
     MacBuffer.rssi,
     day(t),
     month(t),
