@@ -221,7 +221,7 @@ void draw_withManualTime(bool wholePage) {
     draw_manualTime_partly_exec(p.big);
 
   if(p.update)
-    screenUpdate.once(8, nextManualPage);
+    screenUpdate.once(TIME_SYNC_MANUAL_SKIP_TIMEOUT, nextManualPage);
   clickTimer_active = false;
 }
 
