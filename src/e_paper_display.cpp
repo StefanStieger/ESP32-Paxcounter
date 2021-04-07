@@ -178,15 +178,19 @@ void draw_main(time_t t) {
     #endif
     
     // display wifi bitmap
-    display.drawBitmap(10, 10, wifi_bitmap, 32, 32, GxEPD_BLACK);
-    display.setCursor(50, 20);
-    display.setTextSize(2.5);
-    display.println(macs_wifi);
+    #if(WIFICOUNTER == 1)
+      display.drawBitmap(10, 10, wifi_bitmap, 32, 32, GxEPD_BLACK);
+      display.setCursor(50, 20);
+      display.setTextSize(2.5);
+     display.println(macs_wifi);
+    #endif
     
     // display ble bitmap
-    display.drawBitmap(10, 50, ble_bitmap, 32, 32, GxEPD_BLACK);
-    display.setCursor(50, 60);
-    display.println(macs_ble);
+    #if(BLECOUNTER == 1)
+      display.drawBitmap(10, 50, ble_bitmap, 32, 32, GxEPD_BLACK);
+      display.setCursor(50, 60);
+      display.println(macs_ble);
+    #endif
 
     // display time - button right corner
     display.setTextSize(1.5);
