@@ -162,7 +162,7 @@ void draw_main(time_t t) {
   display.firstPage();
   do {
     #if (defined BAT_MEASURE_ADC || defined HAS_PMU || defined HAS_IP5306)
-      if(batt_level < 50) {
+      if(batt_level < BATTERY_LEVEL_LOW_TRIGGER) {
         display.setTextSize(2);
         display.setCursor(calc_x_centerAlignment("Please recharge", 20), 20);
         display.println("Please recharge");
@@ -222,7 +222,7 @@ void draw_main(time_t t) {
     int startY = display.height() - 25;
     for(int8_t i=0; i<STATISTICS_MAX_ENTRIES; ++i) {
       int x = startX + i;
-      display.drawLine(x, startY, x, startY - statistics[(statisticsPointer+i) % STATISTICS_MAX_ENTRIES], GxEPD_BLACK);
+      display.drawLine(x, startY, x, startY - (statistics[(statisticsPointer+i) % STATISTICS_MAX_ENTRIES] * GRAPH_SCALE_FACTOR), GxEPD_BLACK);
     }
     
     // display battery status

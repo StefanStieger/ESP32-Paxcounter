@@ -127,7 +127,7 @@ PageData getPageData() {
   PageData p;
   switch(displayPage) {
     case page_manualTime_start:
-      p.desc = "Time & date need to be set. Press button for selection and then wait "+String(TIME_SYNC_MANUAL_SKIP_TIMEOUT)+" seconds to confirm.";
+      p.desc = "Time needs to be set. Press button for selection and then wait "+String(TIME_SYNC_MANUAL_SKIP_TIMEOUT)+" seconds to confirm.";
       p.big = "Press btn";
       p.update = false;
       return p;
