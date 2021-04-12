@@ -56,7 +56,7 @@
 
 #define SDCARD_FILE_NAME "/paxcount.%02d"
 #define SDCARD_FILE_HEADER "date, time, wifi, bluet"
-#define SDCARD_INSTANT_MACS_FILE_HEADER "mac,rssi,date,time"
+#define SDCARD_INSTANT_MACS_FILE_HEADER "mac,rssi,date,time,type"
 
 #if (COUNT_ENS)
 #define SDCARD_FILE_HEADER_CWA ",cwa"
