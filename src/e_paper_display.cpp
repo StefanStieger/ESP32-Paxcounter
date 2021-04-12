@@ -162,7 +162,7 @@ void draw_main(time_t t) {
   display.firstPage();
   do {
     #if (defined BAT_MEASURE_ADC || defined HAS_PMU || defined HAS_IP5306)
-      if(batt_level < 50) {
+      if(batt_level < BATTERY_LEVEL_LOW_TRIGGER) {
         display.setTextSize(2);
         display.setCursor(calc_x_centerAlignment("Please recharge", 20), 20);
         display.println("Please recharge");
@@ -194,20 +194,35 @@ void draw_main(time_t t) {
 
     // display time - button right corner
     display.setTextSize(1.5);
-    display.setCursor(calc_x_rightAlignment(time_string, 10), calc_y_bottomAlignment(time_string, 0));
-    display.println(time_string);
+    String time_text = String("Referencetime: ") + time_string;
+    display.setCursor(calc_x_rightAlignment(time_text, 10), calc_y_bottomAlignment(time_text, 0));
+    display.println(time_text);
+
+    // display y-axis label - COUNT
+    display.setTextSize(1.5);
+    display.setCursor((display.width() / 2) + STATISTICS_MAX_ENTRIES - 15, 8);
+    display.println(String("Count"));    
+
+    // display x-axis label - TIME
+    display.setTextSize(1.5);
+    display.setCursor((display.width() / 2) - 25, display.height() - 30);
+    display.println(String("Time"));      
 
     // draw vertical line in the middle between battery status and time
     display.drawFastVLine(display.width() / 2, display.height() - 15, display.height(), GxEPD_BLACK);
 
-    // draw vertical line in the middle between battery status and time
-    // currently place-holder
+    // draw x- and y-axes
+    // y-line
+    display.drawLine((display.width() / 2) + STATISTICS_MAX_ENTRIES, display.height() - 25, (display.width() / 2) + STATISTICS_MAX_ENTRIES, 20, GxEPD_BLACK);
+    // x-line (short)
+    // display.drawLine((display.width() / 2) - 15, display.height() - 15, (display.width() / 2), display.height() - 15, GxEPD_BLACK);
 
+    // draw barchart of counts as feedback for participants
     int startX = (display.width() / 2);
     int startY = display.height() - 25;
     for(int8_t i=0; i<STATISTICS_MAX_ENTRIES; ++i) {
       int x = startX + i;
-      display.drawLine(x, startY, x, startY - statistics[(statisticsPointer+i) % STATISTICS_MAX_ENTRIES], GxEPD_BLACK);
+      display.drawLine(x, startY, x, startY - (statistics[(statisticsPointer+i) % STATISTICS_MAX_ENTRIES] * GRAPH_SCALE_FACTOR), GxEPD_BLACK);
     }
     
     // display battery status
