@@ -42,10 +42,28 @@ bool sdcard_init(bool verbose) {
 }
 
 void writeMac(MacBuffer_t MacBuffer) {
-  char tempBuffer[40];
-  time_t t = now();
+
+  const char* type;
+  switch(MacBuffer.sniff_type) {
+    case MAC_SNIFF_WIFI:
+      type = "Wifi";
+      break;
+    case MAC_SNIFF_BLE:
+      type = "ble";
+      break;
+    case MAC_SNIFF_BLE_ENS:
+      type = "ble_ens";
+      break;
+    default:
+      type = "none";
+      break;
+
+  }
+  char tempBuffer[45];
+
+  time_t t = myTZ.toLocal(now());
   #if (VERBOSE == 1)
-    ESP_LOGI(TAG, "%02x:%02x:%02x:%02x:%02x:%02x,%d,%d,%02d.%02d.%4d,%02d:%02d:%02d",
+    ESP_LOGI(TAG, "%02x:%02x:%02x:%02x:%02x:%02x,%d,%d,%02d.%02d.%4d,%02d:%02d:%02d,%s",
       MacBuffer.mac[0],
       MacBuffer.mac[1],
       MacBuffer.mac[2],
@@ -59,11 +77,12 @@ void writeMac(MacBuffer_t MacBuffer) {
       year(t),
       hour(t),
       minute(t),
-      second(t));
+      second(t),
+      type);
   #endif
   sprintf(
     tempBuffer,
-    "%d,%d,%02d.%02d.%4d,%02d:%02d:%02d",
+    "%d,%d,%02d.%02d.%4d,%02d:%02d:%02d,%s",
     myhash((const char *)&MacBuffer.mac, 4),
     MacBuffer.rssi,
     day(t),
@@ -71,7 +90,8 @@ void writeMac(MacBuffer_t MacBuffer) {
     year(t),
     hour(t),
     minute(t),
-    second(t)
+    second(t),
+    type
   );
 
   if(!useSDCard)
@@ -83,7 +103,6 @@ void sdcardWriteData(uint16_t noWifi, uint16_t noBle,
                      __attribute__((unused)) uint16_t noBleCWA) {
   static int counterWrites = 0;
 #if (SAVE_MACS_INSTANTLY == 1)
-  fileSDCard.println();
   fileSDCard.flush();
   return;
 #endif
